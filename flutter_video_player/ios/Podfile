@@ -1,0 +1,78 @@
+# Uncomment this line to define a global platform for your project
+platform :ios, '13.0'
+
+# CocoaPods analytics sends network stats synchronously affecting flutter build latency.
+ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+project 'Runner', {
+  'Debug' => :debug,
+  'Profile' => :release,
+  'Release' => :release,
+}
+
+def flutter_root
+  generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
+  unless File.exist?(generated_xcode_build_settings_path)
+    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
+  end
+
+  File.foreach(generated_xcode_build_settings_path) do |line|
+    matches = line.match(/FLUTTER_ROOT\=(.*)/)
+    return matches[1].strip if matches
+  end
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
+end
+
+require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
+
+flutter_ios_podfile_setup
+
+target 'Runner' do
+  use_frameworks! :linkage => :static
+  use_modular_headers!
+
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+  target 'RunnerTests' do
+    inherit! :search_paths
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    flutter_additional_ios_build_settings(target)
+    
+    target.build_configurations.each do |config|
+      # Fix for Apple Silicon - exclude x86_64 architecture for simulator builds
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'x86_64'
+      config.build_settings['ONLY_ACTIVE_ARCH'] = 'YES'
+      
+      # Ensure minimum iOS version is 13.0
+      deployment_target = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if deployment_target && deployment_target.to_f < 13.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      end
+      
+      # Fix for unsupported -G compiler flag (gRPC/Firebase issue)
+      # Filter out problematic compiler flags
+      %w[OTHER_CFLAGS OTHER_CPLUSPLUSFLAGS OTHER_CFLAGS_DEBUG OTHER_CFLAGS_RELEASE].each do |flag|
+        if config.build_settings[flag]
+          flags = config.build_settings[flag]
+          if flags.is_a?(String)
+            config.build_settings[flag] = flags.gsub(/\s*-G\s*/, ' ').strip
+          elsif flags.is_a?(Array)
+            config.build_settings[flag] = flags.reject { |f| f.to_s.include?('-G') }
+          end
+        end
+      end
+      
+      # Additional settings for gRPC-related pods
+      if target.name.include?('gRPC') || target.name.include?('BoringSSL') || target.name.include?('Firestore') || target.name.include?('abseil')
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        config.build_settings['CLANG_CXX_LIBRARY'] = 'libc++'
+        config.build_settings['GCC_C_LANGUAGE_STANDARD'] = 'gnu11'
+        # Ensure proper linking for abseil
+        config.build_settings['OTHER_LDFLAGS'] = '$(inherited) -lc++ -lstdc++'
+      end
+    end
+  end
+end
