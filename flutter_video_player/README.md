@@ -1,3 +1,9 @@
+# Download & Resources
+
+- **APK:** [Download APK](https://drive.google.com/drive/folders/1vmPr5cphKf2hY_5Iyy5MwOFg84_QyHhD?usp=sharing)
+- **Video Explanation:** [Watch on Loom](https://www.loom.com/share/1e9f070797724430a765066e605857e5)
+- **GitHub Repository:** [Flutter-video-player-](https://github.com/salahuddinjony/Flutter-video-player-)
+
 ## JSON Change Detection and Instruction Persistence
 
 The app ensures that video instructions are always up to date and reliable, both online and offline, using the following process:
