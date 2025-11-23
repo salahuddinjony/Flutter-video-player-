@@ -1,6 +1,29 @@
+## JSON Change Detection and Instruction Persistence
+
+The app ensures that video instructions are always up to date and reliable, both online and offline, using the following process:
+
+1. **Initial Load**: On startup, the app loads instructions from Firebase Firestore if online, or from local storage/assets if offline.
+2. **Hash Calculation**: The app calculates a hash of the current instructions to efficiently detect changes.
+3. **Real-time Listening**: The app listens for updates to the instructions document in Firestore. When a change is detected, it fetches and validates the new instructions.
+4. **Change Comparison**: The hash of the new instructions is compared to the last applied hash. If different, the new instructions are applied and the playlist is updated.
+5. **Persistence**: The latest instructions and their hash are saved to local storage (using SharedPreferences), so the app can continue using the last valid instructions even if offline.
+6. **Offline Mode**: If the app is offline or Firestore is unreachable, it loads and uses the last saved instructions from local storage, ensuring uninterrupted playback.
+
+This approach guarantees seamless updates when online and robust fallback when offline, with all changes detected efficiently using hashing and real-time Firestore listeners.
 # Flutter Video Player
 
-A Flutter application that plays videos in a loop based on JSON instructions. The app supports offline playback, Socket.IO integration for real-time updates, and persistent instruction storage.
+
+A Flutter application that plays videos in a loop based on JSON instructions. The app supports offline playback, real-time updates using Firebase Firestore, and persistent instruction storage.
+
+## What I Have Done in This Project
+
+- Built a Flutter video player app that plays a playlist of MP4 videos in a continuous loop, based on instructions defined in a JSON file.
+- Implemented persistent storage for instructions, so the app works offline and remembers the last valid configuration.
+- Used Firebase Firestore to detect real-time changes to the JSON instructions, enabling instant updates to the video playlist when the backend changes.
+- Designed the app to handle missing files, invalid JSON, and network errors gracefully, ensuring robust offline-first behavior.
+- Used GetX for state management and MVC architecture for code organization.
+- Provided clear error handling and logging for troubleshooting.
+
 
 ## Features
 
@@ -8,13 +31,13 @@ A Flutter application that plays videos in a loop based on JSON instructions. Th
 - ✅ Continuous looping according to schedule
 - ✅ JSON-driven schedule configuration
 - ✅ Persistent instruction storage
-- ✅ Socket.IO integration for real-time JSON updates
+- ✅ Real-time JSON updates using Firebase Firestore
 - ✅ Full-screen video playback
 - ✅ Offline-first architecture
 - ✅ Error handling for missing files
 - ✅ GetX state management
-- ✅ GoRouter navigation
 - ✅ MVC architecture
+
 
 ## Project Structure
 
@@ -29,7 +52,7 @@ lib/
 │   └── app_router.dart
 ├── services/             # Business Logic Services
 │   ├── file_service.dart
-│   ├── socket_service.dart
+│   ├── firebase_service.dart
 │   └── storage_service.dart
 ├── views/                # UI Views
 │   └── video_player_view.dart
@@ -134,34 +157,23 @@ The app reads instructions from `assets/instructions.json` or local storage. Her
 - `repeat`: Number of times to repeat this specific video in the playlist
 - `sequence`: Playback order sequence
 
-## Socket.IO Integration
 
-The app uses Socket.IO to periodically check for JSON instruction updates. 
+## Real-time Updates with Firebase Firestore
+
+The app uses Firebase Firestore to detect real-time changes to the JSON instructions. When the instructions document in Firestore is updated, the app automatically receives the new configuration and updates the video playlist accordingly.
 
 ### Configuration
 
-Update the Socket.IO server URL in `lib/controllers/instruction_controller.dart`:
+- Set up your Firebase project and Firestore database.
+- Update the Firestore document path in `lib/services/firebase_service.dart` or the relevant service file.
+- Ensure your `google-services.json` (Android) and `GoogleService-Info.plist` (iOS) are properly configured.
 
-```dart
-const serverUrl = 'http://your-server-url:3000';
-```
+### How It Works
 
-For Android emulator, use: `http://10.0.2.2:3000`  
-For physical device, use your computer's IP address
-
-### Events
-
-The app listens for:
-- `instructions_update`: Receives new instructions directly
-- `json_updated`: Notification that the JSON file has been updated
-
-### Periodic Checking
-
-The app also checks for JSON file updates every 30 seconds automatically.
-
-### Server Setup
-
-See [SOCKET_IO_SETUP.md](SOCKET_IO_SETUP.md) for detailed instructions on setting up a Socket.IO server for testing.
+1. On app start, the app loads instructions from Firestore if online, or from local storage/assets if offline.
+2. The app listens for real-time updates to the instructions document in Firestore.
+3. When a change is detected, the app validates and applies the new instructions, updating the video playlist instantly.
+4. If offline, the app continues using the last saved instructions.
 
 ## How JSON Change Detection Works
 
@@ -195,6 +207,7 @@ For detailed information, see [JSON_CHANGE_DETECTION.md](JSON_CHANGE_DETECTION.m
 - **Invalid JSON**: Invalid JSON format is caught and displayed to the user
 - **Network Errors**: Socket.IO connection errors don't prevent offline playback
 
+
 ## Architecture
 
 ### MVC Pattern
@@ -207,11 +220,6 @@ For detailed information, see [JSON_CHANGE_DETECTION.md](JSON_CHANGE_DETECTION.m
 
 - **GetX**: Used for reactive state management
 - Controllers are registered globally and accessible throughout the app
-
-### Navigation
-
-- **GoRouter**: Declarative routing configuration
-- Single route for the video player view
 
 ## Sample Video Files
 
