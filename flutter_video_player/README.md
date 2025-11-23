@@ -181,32 +181,6 @@ The app uses Firebase Firestore to detect real-time changes to the JSON instruct
 3. When a change is detected, the app validates and applies the new instructions, updating the video playlist instantly.
 4. If offline, the app continues using the last saved instructions.
 
-## How JSON Change Detection Works
-
-For detailed information, see [JSON_CHANGE_DETECTION.md](JSON_CHANGE_DETECTION.md).
-
-### Quick Overview
-
-1. **Initial Load**: On app start, the app loads instructions from:
-   - Local storage (if available)
-   - Assets folder (fallback)
-
-2. **Hash Calculation**: Each instruction set is hashed for change detection
-
-3. **Change Detection**: 
-   - When new instructions are received via Socket.IO or file update
-   - The app compares the hash of new instructions with the last applied hash
-   - If different, new instructions are applied
-
-4. **Persistence**: 
-   - Applied instructions are saved to SharedPreferences
-   - The hash is also saved for future comparison
-   - The app continues using the last applied instructions until a change is detected
-
-5. **Offline Mode**: 
-   - If Socket.IO is unavailable, the app continues using the last saved instructions
-   - Videos play from local assets or device storage
-
 ## Error Handling
 
 - **Missing Video Files**: If a video file listed in JSON is missing, it's skipped and an error is logged
