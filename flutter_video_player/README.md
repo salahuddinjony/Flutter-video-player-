@@ -250,17 +250,7 @@ You can use any MP4 videos for testing. For production, ensure videos are:
 2. Verify file names match exactly in `instructions.json`
 3. Check console logs for error messages
 
-### Socket.IO not connecting
 
-1. Verify the server URL is correct
-2. Check network connectivity
-3. The app will continue working offline with last saved instructions
-
-### JSON not updating
-
-1. Ensure the JSON file is valid
-2. Check that the hash calculation is working (see logs)
-3. Verify Socket.IO events are being received
 
 ## Development
 
