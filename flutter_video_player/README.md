@@ -181,11 +181,13 @@ The app uses Firebase Firestore to detect real-time changes to the JSON instruct
 3. When a change is detected, the app validates and applies the new instructions, updating the video playlist instantly.
 4. If offline, the app continues using the last saved instructions.
 
+
 ## Error Handling
 
-- **Missing Video Files**: If a video file listed in JSON is missing, it's skipped and an error is logged
-- **Invalid JSON**: Invalid JSON format is caught and displayed to the user
-- **Network Errors**: Socket.IO connection errors don't prevent offline playback
+- **Missing Video Files**: If a video file listed in JSON is missing, it's skipped and an error is logged.
+- **Invalid JSON**: Invalid JSON format is caught and displayed to the user.
+- **Network Errors**: Firestore connection errors don't prevent offline playback; the app continues using the last saved instructions.
+- **General Robustness**: The app is designed to handle all errors gracefully, ensuring uninterrupted playback and clear error messages for troubleshooting.
 
 
 ## Architecture
@@ -216,6 +218,7 @@ You can use any MP4 videos for testing. For production, ensure videos are:
 - Reasonably sized for mobile devices
 - Optimized for playback
 
+
 ## Troubleshooting
 
 ### Videos not playing
@@ -224,7 +227,17 @@ You can use any MP4 videos for testing. For production, ensure videos are:
 2. Verify file names match exactly in `instructions.json`
 3. Check console logs for error messages
 
+### Firestore not connecting
 
+1. Check network connectivity
+2. Ensure Firebase is properly configured
+3. The app will continue working offline with last saved instructions
+
+### JSON not updating
+
+1. Ensure the JSON file is valid
+2. Check that the hash calculation is working (see logs)
+3. Verify Firestore document updates are being received
 
 ## Development
 
